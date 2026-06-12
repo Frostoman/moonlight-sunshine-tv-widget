@@ -14,6 +14,8 @@ A lightweight **Android TV** app that puts your PC game library — streamed fro
 I'm **not a programmer** — I built this entirely with **Claude Code**, originally just for
 myself. I'm sharing it in case it's useful to someone else.
 
+**Pray for Ukraine!** 💙💛 🇺🇦
+
 Moonlight's developers are welcome to use it however they like — and it would be great to see
 this kind of home-screen integration built into Moonlight itself. I've done everything I wanted
 with it, so the source is open for anyone to take and adapt. 🙂
