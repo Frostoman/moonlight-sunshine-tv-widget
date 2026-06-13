@@ -15,11 +15,11 @@ import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 
 /**
- * NVIDIA GameStream / Sunshine PIN pairing handshake.
+ * NVIDIA GameStream PIN pairing handshake.
  * Direct port of moonlight-android's PairingManager.
  */
 class PairingManager(
-    private val http: SunshineHttp,
+    private val http: GameStreamHttp,
     crypto: CryptoProvider,
 ) {
     enum class PairState { NOT_PAIRED, PAIRED, PIN_WRONG, FAILED, ALREADY_IN_PROGRESS }
@@ -38,7 +38,7 @@ class PairingManager(
     }
 
     /**
-     * Runs the full handshake. The PC user must enter [pin] into Sunshine's Web UI
+     * Runs the full handshake. The PC user must enter [pin] into the host's Web UI
      * while this is in progress (the first request has no read timeout for that reason).
      */
     fun pair(serverInfo: String, pin: String): PairState {
@@ -52,7 +52,7 @@ class PairingManager(
             "phrase=getservercert&salt=${salt.toHex()}&clientcert=${pemCertBytes.toHex()}",
             enableReadTimeout = false,
         )
-        if (SunshineHttp.xmlString(getCert, "paired") != "1") return PairState.FAILED
+        if (GameStreamHttp.xmlString(getCert, "paired") != "1") return PairState.FAILED
 
         val srvCert = extractPlainCert(getCert) ?: run {
             http.unpair(); return PairState.ALREADY_IN_PROGRESS
@@ -64,10 +64,10 @@ class PairingManager(
         val randomChallenge = randomBytes(16)
         val encChallenge = encryptAes(randomChallenge, aesKey)
         val challengeResp = http.executePairingCommand("clientchallenge=${encChallenge.toHex()}", true)
-        if (SunshineHttp.xmlString(challengeResp, "paired") != "1") { http.unpair(); return PairState.FAILED }
+        if (GameStreamHttp.xmlString(challengeResp, "paired") != "1") { http.unpair(); return PairState.FAILED }
 
         // 3. Decode server's response + its challenge.
-        val decResp = decryptAes(SunshineHttp.xmlString(challengeResp, "challengeresponse")!!.hexToBytes(), aesKey)
+        val decResp = decryptAes(GameStreamHttp.xmlString(challengeResp, "challengeresponse")!!.hexToBytes(), aesKey)
         val serverResponse = decResp.copyOfRange(0, hash.length)
         val serverChallenge = decResp.copyOfRange(hash.length, hash.length + 16)
 
@@ -75,10 +75,10 @@ class PairingManager(
         val challengeRespHash = hash.hash(serverChallenge + cert.signature + clientSecret)
         val challengeRespEnc = encryptAes(challengeRespHash, aesKey)
         val secretResp = http.executePairingCommand("serverchallengeresp=${challengeRespEnc.toHex()}", true)
-        if (SunshineHttp.xmlString(secretResp, "paired") != "1") { http.unpair(); return PairState.FAILED }
+        if (GameStreamHttp.xmlString(secretResp, "paired") != "1") { http.unpair(); return PairState.FAILED }
 
         // 4. Verify the server's signed secret (MITM check).
-        val serverSecretResp = SunshineHttp.xmlString(secretResp, "pairingsecret")!!.hexToBytes()
+        val serverSecretResp = GameStreamHttp.xmlString(secretResp, "pairingsecret")!!.hexToBytes()
         val serverSecret = serverSecretResp.copyOfRange(0, 16)
         val serverSignature = serverSecretResp.copyOfRange(16, serverSecretResp.size)
         if (!verifySignature(serverSecret, serverSignature, srvCert)) { http.unpair(); return PairState.FAILED }
@@ -90,11 +90,11 @@ class PairingManager(
         // 6. Send our signed secret.
         val clientPairingSecret = clientSecret + signData(clientSecret, pk)
         val clientSecretResp = http.executePairingCommand("clientpairingsecret=${clientPairingSecret.toHex()}", true)
-        if (SunshineHttp.xmlString(clientSecretResp, "paired") != "1") { http.unpair(); return PairState.FAILED }
+        if (GameStreamHttp.xmlString(clientSecretResp, "paired") != "1") { http.unpair(); return PairState.FAILED }
 
         // 7. Final challenge over HTTPS to confirm paired state.
         val pairChallenge = http.executePairingChallenge()
-        if (SunshineHttp.xmlString(pairChallenge, "paired") != "1") { http.unpair(); return PairState.FAILED }
+        if (GameStreamHttp.xmlString(pairChallenge, "paired") != "1") { http.unpair(); return PairState.FAILED }
 
         return PairState.PAIRED
     }
@@ -102,7 +102,7 @@ class PairingManager(
     // ---- crypto helpers ----------------------------------------------------
 
     private fun extractPlainCert(xml: String): X509Certificate? {
-        val hex = SunshineHttp.xmlString(xml, "plaincert") ?: return null
+        val hex = GameStreamHttp.xmlString(xml, "plaincert") ?: return null
         return CertificateFactory.getInstance("X.509")
             .generateCertificate(ByteArrayInputStream(hex.hexToBytes())) as X509Certificate
     }

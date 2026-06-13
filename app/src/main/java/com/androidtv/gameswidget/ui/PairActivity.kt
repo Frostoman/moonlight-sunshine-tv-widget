@@ -8,7 +8,7 @@ import com.androidtv.gameswidget.App
 import com.androidtv.gameswidget.R
 import com.androidtv.gameswidget.databinding.ActivityPairBinding
 import com.androidtv.gameswidget.net.PairingManager
-import com.androidtv.gameswidget.net.SunshineHttp
+import com.androidtv.gameswidget.net.GameStreamHttp
 import com.androidtv.gameswidget.sync.SyncManager
 import com.androidtv.gameswidget.sync.SyncWorker
 import kotlinx.coroutines.Dispatchers
@@ -16,10 +16,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Establishes this app's own pairing with the Sunshine host.
+ * Establishes this app's own pairing with the host.
  *
  * Flow: connect -> fetch serverinfo -> show a 4-digit PIN that the user enters in
- * Sunshine's Web UI -> run the handshake -> persist host + pinned server cert -> sync.
+ * the host's Web UI -> run the handshake -> persist host + pinned server cert -> sync.
  */
 class PairActivity : AppCompatActivity() {
 
@@ -45,7 +45,7 @@ class PairActivity : AppCompatActivity() {
         val app = App.from(this)
         lifecycleScope.launch {
             try {
-                val http = SunshineHttp(host, SunshineHttp.DEFAULT_HTTP_PORT, 0, app.crypto)
+                val http = GameStreamHttp(host, GameStreamHttp.DEFAULT_HTTP_PORT, 0, app.crypto)
                 val pm = PairingManager(http, app.crypto)
 
                 val serverInfo = withContext(Dispatchers.IO) { http.serverInfoHttp() }
@@ -63,7 +63,7 @@ class PairActivity : AppCompatActivity() {
                     PairingManager.PairState.PAIRED -> {
                         app.hostStore.apply {
                             this.host = host
-                            httpPort = SunshineHttp.DEFAULT_HTTP_PORT
+                            httpPort = GameStreamHttp.DEFAULT_HTTP_PORT
                             httpsPort = http.httpsPort
                             pcName = details.name
                             pcUuid = details.uuid

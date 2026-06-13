@@ -25,14 +25,14 @@ import javax.net.ssl.X509KeyManager
 import javax.net.ssl.X509TrustManager
 
 /**
- * Talks the NVIDIA GameStream / Sunshine HTTP(S) protocol to a single host.
+ * Talks the NVIDIA GameStream HTTP(S) protocol to a single host.
  * Ported from moonlight-android's NvHTTP (only the bits this widget needs).
  *
  * Plaintext HTTP (port 47989) is used for serverinfo before pairing and for the
  * /pair handshake. Everything after pairing (applist, appasset, pairchallenge)
  * goes over mutual-TLS HTTPS (port 47984) with the server cert pinned.
  */
-class SunshineHttp(
+class GameStreamHttp(
     val host: String,
     private val httpPort: Int,
     httpsPort: Int,
@@ -91,7 +91,7 @@ class SunshineHttp(
     }
 
     private val baseClient = OkHttpClient.Builder()
-        // Sunshine/GFE close the socket after each response, so disable connection
+        // Some hosts close the socket after each response, so disable connection
         // reuse — otherwise the 2nd request in a session hangs on a dead socket.
         .connectionPool(ConnectionPool(0, 1, TimeUnit.MILLISECONDS))
         .connectTimeout(LONG_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS)

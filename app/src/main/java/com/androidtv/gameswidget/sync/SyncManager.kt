@@ -5,7 +5,7 @@ import android.os.Build
 import com.androidtv.gameswidget.App
 import com.androidtv.gameswidget.data.HostStore
 import com.androidtv.gameswidget.net.NvApp
-import com.androidtv.gameswidget.net.SunshineHttp
+import com.androidtv.gameswidget.net.GameStreamHttp
 import com.androidtv.gameswidget.tv.TvChannelPublisher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -28,7 +28,7 @@ class SyncManager(private val context: Context) {
         if (!store.isConfigured) return@withContext Result.NotConfigured
 
         val host = store.host ?: return@withContext Result.NotConfigured
-        val http = SunshineHttp(host, store.httpPort, store.httpsPort, app.crypto).apply {
+        val http = GameStreamHttp(host, store.httpPort, store.httpsPort, app.crypto).apply {
             serverCert = store.serverCert
         }
 
@@ -45,7 +45,7 @@ class SyncManager(private val context: Context) {
             android.util.Log.i(TAG, "sync: fetching applist")
             val raw = http.getAppListRaw()
             android.util.Log.i(TAG, "sync: applist raw length=${raw.length}")
-            val games = SunshineHttp.parseAppList(raw)
+            val games = GameStreamHttp.parseAppList(raw)
                 .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.appName })
             android.util.Log.i(TAG, "sync: parsed ${games.size} games: ${games.joinToString { it.appName }}")
             store.saveGames(games)

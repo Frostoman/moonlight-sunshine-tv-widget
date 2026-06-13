@@ -18,3 +18,8 @@ build_log.txt
 # Tooling caches / local session config
 /.kotlin/
 /.claude/
+
+# Release signing (keep private, never commit)
+*.keystore
+*.jks
+keystore.properties
