@@ -1,4 +1,4 @@
-# Moonlight AndroidTV Widget
+# Moonlight Android TV Widget
 
 Легкий застосунок для **Android TV**, що виводить бібліотеку ігор з твого ПК — зі стрімінгом
 через **Moonlight-сумісний хост** — прямо на головний екран як **канал-віджет** Android TV.
