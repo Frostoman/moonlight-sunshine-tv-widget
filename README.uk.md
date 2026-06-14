@@ -104,6 +104,10 @@ gradlew.bat assembleDebug
 APK з'явиться в `app/build/outputs/apk/debug/MoonlightAndroidTVWidget-debug.apk`.
 Найпростіше відкрити проєкт у **Android Studio** (він має вбудований JDK).
 
+Це **debug-підписаний** APK — годиться для особистого встановлення й не потребує ключа. Офіційні
+[релізи](../../releases) підписані **release-ключем**; щоб зібрати підписаний APK самому, додай
+`keystore.properties` (він у gitignore) і виконай `gradlew assembleRelease`.
+
 ## Відомі обмеження
 
 - Деякі лаунчери (напр. Mi TV Home) додають перед назвою каналу мітку застосунку з двокрапкою

@@ -104,6 +104,10 @@ gradlew.bat assembleDebug
 The APK is produced at `app/build/outputs/apk/debug/MoonlightAndroidTVWidget-debug.apk`.
 Open the project in **Android Studio** for the easiest setup (it bundles a JDK).
 
+That's a **debug-signed** build — fine for personal sideloading and needs no keystore. The
+official [Releases](../../releases) are **release-signed**; to build a signed APK yourself, add a
+`keystore.properties` (gitignored) and run `gradlew assembleRelease`.
+
 ## Known limitations
 
 - Some custom launchers (e.g. Mi TV Home) prefix the channel with the app label and a colon
